@@ -1,1 +1,1 @@
-# pdac-survival-prediction
+# Multimodal survival prediction for PDAC

@@ -26,13 +26,18 @@ Refer to scripts folder for source files to train the unimodal AI models and the
 The preferred mode of communication is via GitHub issues.
 If GitHub issues are inappropriate, email megan.schuurmans@radboudumc.nl.
 Immediate response to minor issues may not be available.
-License and Usage
+
+### License and Usage
 If you find our work useful in your research, please consider citing our paper at:
-@article{schuurmans2024pdacsurvpred,
+
+<pre>
+@article{schuurmans2024mmpdac,
   title={End-to-end prognostication in pancreatic cancer by multimodal deep learning: a retrospective, multi-centre study},
   author={Schuurmans, Megan and Saha, Anindo and Alves, Natalia and Vendittelli, Pierpaolo and Yakar, Derya and Sabroso, Sergio and Malats, Nuria and Huisman, Henkjan and Hermans, John and Litjens, Geert},
   journal={},
   year={2024}
 }
+</pre>
+
 DIAG - This code is made available under is available for non-commercial academic purposes.
 

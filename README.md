@@ -7,3 +7,14 @@ Welcome to the official GitHub repository for our '' 2024 paper, "_End-to-end pr
 ## Highlights
 
 In our study, we explore the integration of clinical data and contrast-enhanced computed tomography (CECT) at time of diagnosis of pancreatic ductal adenocarcinoma (PDAC) to enhance patient survival prediction. We focus on addressing two key challenges: (1) developing unimodal AI models for clinical data and CECT scans (2) developing a multimodal AI system combining the short-term survival riskscores of both unimodal models. Our proposed model surpasses the current TNM stagig system in providing prognosis, showcasing stable performance across two external validation cohorts. 
+
+## Installation Guide for Linux 
+
+### The development data and internal test set
+To download development data and internal test set for the unimodal model for CECT, please refer to [the PANORAMA study](https://zenodo.org/records/10599559) dataset. [Labels and clinical data of the PANORAMA study dataset](https://github.com/DIAGNijmegen/panorama_labels) are also made publicly available. 
+
+### Processing CECT images
+To preprocess your CECT images, please segment the pancreas parenchyma and the tumor using a segmentation tool (e.g. ]ITKsnap 3.8](http://www.itksnap.org/pmwiki/pmwiki.php)). After segmentating the pancreas parenchyma and lesion, mask out the CECT and crop to (96, 256, 256) around the pancreas. This can all be automatically done with the [PDAC detection algorithm](https://grand-challenge.org/algorithms/pdac-detection/) by Alves et al. (2022). Lastly, the cropped and masked CECT needs to be clipped in HU intensity to account for high attenuation creating noise in the masked area. 
+
+
+

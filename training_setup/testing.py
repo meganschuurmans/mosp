@@ -193,91 +193,90 @@ def internal_testing(args):
     # NO ENSEMBLE TESTING
     #-----------------------------------------------------------------------------------------        
         print(f'Ensemble is turned off')
-        if args.modal_type != 'nomogram_SEER' and args.modal_type != 'nomogram_dc':
-            for fold in range(args.num_folds):
-                all_test_preds = []
-                if args.modal_type == 'mm':
-        #-----------------------------------------------------------------------------------------                                  
-        # uni_imaging[F1, F2, F3, F4, F5]
-        #                                -----> mm[F1, F2, F3, F4, F5]                                     
-        # uni_clinic[F1, F2, F3, F4, F5]  
-        #----------------------------------------------------------------------------------------- 
-                    print(f"Loading MM Model for Fold {fold}")
-                    mm_model = load(args.optimal_mm_model_paths['F{}'.format(fold)])
-                    clinic_model = load_clinic_model(args.optimal_clinic_model_paths['F{}'.format(fold)])
-                    clinic_model.eval()                
-                    imaging_model = load_efficientnet_b0_imaging_model(
-                        args.optimal_imaging_model_paths['F{}'.format(fold)], head=True) 
-                                        
-                    imaging_model.eval()  
-                    with torch.no_grad():
+        for fold in range(args.num_folds):
+            all_test_preds = []
+            if args.modal_type == 'mm':
+    #-----------------------------------------------------------------------------------------                                  
+    # uni_imaging[F1, F2, F3, F4, F5]
+    #                                -----> mm[F1, F2, F3, F4, F5]                                     
+    # uni_clinic[F1, F2, F3, F4, F5]  
+    #----------------------------------------------------------------------------------------- 
+                print(f"Loading MM Model for Fold {fold}")
+                mm_model = load(args.optimal_mm_model_paths['F{}'.format(fold)])
+                clinic_model = load_clinic_model(args.optimal_clinic_model_paths['F{}'.format(fold)])
+                clinic_model.eval()                
+                imaging_model = load_efficientnet_b0_imaging_model(
+                    args.optimal_imaging_model_paths['F{}'.format(fold)], head=True) 
+                                    
+                imaging_model.eval()  
+                with torch.no_grad():
 
-                        # for all validation cases in given fold
-                        for x in tqdm.tqdm(range(len(all_test_images))):
-                            # inference with test-time augmentation
-                            test_image = torch.from_numpy(all_test_images[x]).to('cuda')
-                            test_image = [test_image, torch.flip(test_image, [4]).to('cuda')]
+                    # for all validation cases in given fold
+                    for x in tqdm.tqdm(range(len(all_test_images))):
+                        # inference with test-time augmentation
+                        test_image = torch.from_numpy(all_test_images[x]).to('cuda')
+                        test_image = [test_image, torch.flip(test_image, [4]).to('cuda')]
 
-                            imaging_prediction = np.mean([
-                                    imaging_model(x).sigmoid()[0][1].cpu().detach().numpy() 
-                                    for x in test_image])    
-                            
-                            
-                            clinic_prediction = clinic_model(
-                                clinic_features_for_pat_id(args, all_test_ids[x])).sigmoid().cpu().detach().numpy()  
+                        imaging_prediction = np.mean([
+                                imaging_model(x).sigmoid()[0][1].cpu().detach().numpy() 
+                                for x in test_image])    
+                        
+                        
+                        clinic_prediction = clinic_model(
+                            clinic_features_for_pat_id(args, all_test_ids[x])).sigmoid().cpu().detach().numpy()  
 
-                            input_features = np.append(clinic_prediction, imaging_prediction).squeeze().reshape(1, -1)
-                            mm_predictions = mm_model.predict_proba(
-                                input_features)                                  
-                            all_test_preds.append(mm_predictions[0][1])
+                        input_features = np.append(clinic_prediction, imaging_prediction).squeeze().reshape(1, -1)
+                        mm_predictions = mm_model.predict_proba(
+                            input_features)                                  
+                        all_test_preds.append(mm_predictions[0][1])
 
-                elif args.modal_type == 'uni_clinic':
-        #-----------------------------------------------------------------------------------------                                  
-        # uni_clinic[F1, F2, F3, F4, F5] 
-        #-----------------------------------------------------------------------------------------   
-                    print(f"Loading Clinical Model for Fold {fold}")
-                    clinic_model = load_clinic_model(args.optimal_clinic_model_paths['F{}'.format(fold)])
-                    clinic_model.eval()      
-                    with torch.no_grad():
+            elif args.modal_type == 'uni_clinic':
+    #-----------------------------------------------------------------------------------------                                  
+    # uni_clinic[F1, F2, F3, F4, F5] 
+    #-----------------------------------------------------------------------------------------   
+                print(f"Loading Clinical Model for Fold {fold}")
+                clinic_model = load_clinic_model(args.optimal_clinic_model_paths['F{}'.format(fold)])
+                clinic_model.eval()      
+                with torch.no_grad():
 
-                        # for all validation cases in given fold
-                        for x in tqdm.tqdm(range(len(all_test_images))):
-                            imaging_prediction = np.nan
+                    # for all validation cases in given fold
+                    for x in tqdm.tqdm(range(len(all_test_images))):
+                        imaging_prediction = np.nan
 
-                            clinic_prediction = clinic_model(
-                                clinic_features_for_pat_id(args, all_test_ids[x])).sigmoid().cpu().detach().numpy()
+                        clinic_prediction = clinic_model(
+                            clinic_features_for_pat_id(args, all_test_ids[x])).sigmoid().cpu().detach().numpy()
 
-                            input_features = clinic_prediction.squeeze().reshape(1, -1)
-                            all_test_preds.append(input_features[0][0])  
-                            
-                elif args.modal_type =='uni_imaging':
-        #-----------------------------------------------------------------------------------------                                  
-        # uni_imaging[F1, F2, F3, F4, F5] 
-        #-----------------------------------------------------------------------------------------
-                    print(f"Loading Imaging Model for Fold {fold}")
-                    imaging_model = load_efficientnet_b0_imaging_model(
-                        args.optimal_imaging_model_paths['F{}'.format(fold)], head=True)  
-                    imaging_model.eval()  
-                    with torch.no_grad():
+                        input_features = clinic_prediction.squeeze().reshape(1, -1)
+                        all_test_preds.append(input_features[0][0])  
+                        
+            elif args.modal_type =='uni_imaging':
+    #-----------------------------------------------------------------------------------------                                  
+    # uni_imaging[F1, F2, F3, F4, F5] 
+    #-----------------------------------------------------------------------------------------
+                print(f"Loading Imaging Model for Fold {fold}")
+                imaging_model = load_efficientnet_b0_imaging_model(
+                    args.optimal_imaging_model_paths['F{}'.format(fold)], head=True)  
+                imaging_model.eval()  
+                with torch.no_grad():
 
-                        # for all validation cases in given fold
-                        for x in tqdm.tqdm(range(len(all_test_images))):                
-                            clinic_prediction = np.nan
+                    # for all validation cases in given fold
+                    for x in tqdm.tqdm(range(len(all_test_images))):                
+                        clinic_prediction = np.nan
 
-                            test_image = torch.from_numpy(all_test_images[x]).to('cuda')
-                            test_image = [test_image, torch.flip(test_image, [4]).to('cuda')]
-                            imaging_prediction = np.mean([
-                                    imaging_model(x).sigmoid()[0][1].cpu().detach().numpy() 
-                                    for x in test_image])
-                            
-                            input_features = imaging_prediction.squeeze().reshape(1, -1)
-                            all_test_preds.append(input_features[0][0])   
-                fpr_, tpr_, _ = roc_curve(all_test_labels, all_test_preds)
-                auc_ = roc_auc_score(all_test_labels, all_test_preds)
-                fpr.append(fpr_)
-                tpr.append(tpr_)
-                auc.append(auc_)  
-                pred_per_fold.append(all_test_preds)
+                        test_image = torch.from_numpy(all_test_images[x]).to('cuda')
+                        test_image = [test_image, torch.flip(test_image, [4]).to('cuda')]
+                        imaging_prediction = np.mean([
+                                imaging_model(x).sigmoid()[0][1].cpu().detach().numpy() 
+                                for x in test_image])
+                        
+                        input_features = imaging_prediction.squeeze().reshape(1, -1)
+                        all_test_preds.append(input_features[0][0])   
+            fpr_, tpr_, _ = roc_curve(all_test_labels, all_test_preds)
+            auc_ = roc_auc_score(all_test_labels, all_test_preds)
+            fpr.append(fpr_)
+            tpr.append(tpr_)
+            auc.append(auc_)  
+            pred_per_fold.append(all_test_preds)
 
     validation_sheet = pd.DataFrame()
     validation_sheet['aucs'] = auc
@@ -461,90 +460,89 @@ def external_testing(args):
     # NO ENSEMBLE TESTING
     #-----------------------------------------------------------------------------------------        
         print(f'Ensemble is turned off')
-        if args.modal_type != 'nomogram_SEER' and args.modal_type != 'nomogram_dc':
-            for fold in range(args.num_folds):
-                all_test_preds = []
-                if args.modal_type == 'mm':
-        #-----------------------------------------------------------------------------------------                                  
-        # uni_imaging[F1, F2, F3, F4, F5]
-        #                                -----> mm[F1, F2, F3, F4, F5]                                     
-        # uni_clinic[F1, F2, F3, F4, F5]  
-        #----------------------------------------------------------------------------------------- 
-                    print(f"Loading MM Model for Fold {fold}")
-                    mm_model = load(args.optimal_mm_model_paths['F{}'.format(fold)])
-                    clinic_model = load_clinic_model(args.optimal_clinic_model_paths['F{}'.format(fold)])
-                    clinic_model.eval()                
-                    imaging_model = load_efficientnet_b0_imaging_model(
-                        args.optimal_imaging_model_paths['F{}'.format(fold)], head=True) 
-                                        
-                    imaging_model.eval()  
-                    with torch.no_grad():
+        for fold in range(args.num_folds):
+            all_test_preds = []
+            if args.modal_type == 'mm':
+    #-----------------------------------------------------------------------------------------                                  
+    # uni_imaging[F1, F2, F3, F4, F5]
+    #                                -----> mm[F1, F2, F3, F4, F5]                                     
+    # uni_clinic[F1, F2, F3, F4, F5]  
+    #----------------------------------------------------------------------------------------- 
+                print(f"Loading MM Model for Fold {fold}")
+                mm_model = load(args.optimal_mm_model_paths['F{}'.format(fold)])
+                clinic_model = load_clinic_model(args.optimal_clinic_model_paths['F{}'.format(fold)])
+                clinic_model.eval()                
+                imaging_model = load_efficientnet_b0_imaging_model(
+                    args.optimal_imaging_model_paths['F{}'.format(fold)], head=True) 
+                                    
+                imaging_model.eval()  
+                with torch.no_grad():
 
-                        # for all validation cases in given fold
-                        for x in tqdm.tqdm(range(len(all_test_images))):
-                            # inference with test-time augmentation
+                    # for all validation cases in given fold
+                    for x in tqdm.tqdm(range(len(all_test_images))):
+                        # inference with test-time augmentation
 
-                            test_image = torch.from_numpy(all_test_images[x]).to('cuda')
-                            test_image = [test_image, torch.flip(test_image, [4]).to('cuda')]
-                            imaging_prediction = np.mean([
-                                    imaging_model(x).sigmoid()[0][1].cpu().detach().numpy() 
-                                    for x in test_image])    
-                            
-                            clinic_prediction = clinic_model(
-                                clinic_features_for_pat_id(args, all_test_ids[x])).sigmoid().cpu().detach().numpy()  
+                        test_image = torch.from_numpy(all_test_images[x]).to('cuda')
+                        test_image = [test_image, torch.flip(test_image, [4]).to('cuda')]
+                        imaging_prediction = np.mean([
+                                imaging_model(x).sigmoid()[0][1].cpu().detach().numpy() 
+                                for x in test_image])    
+                        
+                        clinic_prediction = clinic_model(
+                            clinic_features_for_pat_id(args, all_test_ids[x])).sigmoid().cpu().detach().numpy()  
 
-                            input_features = np.append(clinic_prediction, imaging_prediction).squeeze().reshape(1, -1)
-                            mm_predictions = mm_model.predict_proba(
-                                input_features)                                  
-                            all_test_preds.append(mm_predictions[0][1])
+                        input_features = np.append(clinic_prediction, imaging_prediction).squeeze().reshape(1, -1)
+                        mm_predictions = mm_model.predict_proba(
+                            input_features)                                  
+                        all_test_preds.append(mm_predictions[0][1])
 
-                elif args.modal_type == 'uni_clinic':
-        #-----------------------------------------------------------------------------------------                                  
-        # uni_clinic[F1, F2, F3, F4, F5] 
-        #-----------------------------------------------------------------------------------------   
-                    print(f"Loading Clinical Model for Fold {fold}")
-                    clinic_model = load_clinic_model(args.optimal_clinic_model_paths['F{}'.format(fold)])
-                    clinic_model.eval()      
-                    with torch.no_grad():
+            elif args.modal_type == 'uni_clinic':
+    #-----------------------------------------------------------------------------------------                                  
+    # uni_clinic[F1, F2, F3, F4, F5] 
+    #-----------------------------------------------------------------------------------------   
+                print(f"Loading Clinical Model for Fold {fold}")
+                clinic_model = load_clinic_model(args.optimal_clinic_model_paths['F{}'.format(fold)])
+                clinic_model.eval()      
+                with torch.no_grad():
 
-                        # for all validation cases in given fold
-                        for x in tqdm.tqdm(range(len(all_test_images))):
-                            imaging_prediction = np.nan
+                    # for all validation cases in given fold
+                    for x in tqdm.tqdm(range(len(all_test_images))):
+                        imaging_prediction = np.nan
 
-                            clinic_prediction = clinic_model(
-                                clinic_features_for_pat_id(args, all_test_ids[x])).sigmoid().cpu().detach().numpy()
+                        clinic_prediction = clinic_model(
+                            clinic_features_for_pat_id(args, all_test_ids[x])).sigmoid().cpu().detach().numpy()
 
-                            input_features = clinic_prediction.squeeze().reshape(1, -1)
-                            all_test_preds.append(input_features[0][0])  
-                            
-                elif args.modal_type =='uni_imaging':
-        #-----------------------------------------------------------------------------------------                                  
-        # uni_imaging[F1, F2, F3, F4, F5] 
-        #-----------------------------------------------------------------------------------------
-                    print(f"Loading Imaging Model for Fold {fold}")
-                    imaging_model = load_efficientnet_b0_imaging_model(
-                        args.optimal_imaging_model_paths['F{}'.format(fold)], head=True)  
-                    imaging_model.eval()  
-                    with torch.no_grad():
+                        input_features = clinic_prediction.squeeze().reshape(1, -1)
+                        all_test_preds.append(input_features[0][0])  
+                        
+            elif args.modal_type =='uni_imaging':
+    #-----------------------------------------------------------------------------------------                                  
+    # uni_imaging[F1, F2, F3, F4, F5] 
+    #-----------------------------------------------------------------------------------------
+                print(f"Loading Imaging Model for Fold {fold}")
+                imaging_model = load_efficientnet_b0_imaging_model(
+                    args.optimal_imaging_model_paths['F{}'.format(fold)], head=True)  
+                imaging_model.eval()  
+                with torch.no_grad():
 
-                        # for all validation cases in given fold
-                        for x in tqdm.tqdm(range(len(all_test_images))):                
-                            clinic_prediction = np.nan
+                    # for all validation cases in given fold
+                    for x in tqdm.tqdm(range(len(all_test_images))):                
+                        clinic_prediction = np.nan
 
-                            test_image = torch.from_numpy(all_test_images[x]).to('cuda')
-                            test_image = [test_image, torch.flip(test_image, [4]).to('cuda')]
-                            imaging_prediction = np.mean([
-                                    imaging_model(x).sigmoid()[0][1].cpu().detach().numpy() 
-                                    for x in test_image])
-                            
-                            input_features = imaging_prediction.squeeze().reshape(1, -1)
-                            all_test_preds.append(input_features[0][0])   
-                fpr_, tpr_, _ = roc_curve(all_test_labels, all_test_preds)
-                auc_ = roc_auc_score(all_test_labels, all_test_preds)
-                fpr.append(fpr_)
-                tpr.append(tpr_)
-                auc.append(auc_)  
-                pred_per_fold.append(all_test_preds)
+                        test_image = torch.from_numpy(all_test_images[x]).to('cuda')
+                        test_image = [test_image, torch.flip(test_image, [4]).to('cuda')]
+                        imaging_prediction = np.mean([
+                                imaging_model(x).sigmoid()[0][1].cpu().detach().numpy() 
+                                for x in test_image])
+                        
+                        input_features = imaging_prediction.squeeze().reshape(1, -1)
+                        all_test_preds.append(input_features[0][0])   
+            fpr_, tpr_, _ = roc_curve(all_test_labels, all_test_preds)
+            auc_ = roc_auc_score(all_test_labels, all_test_preds)
+            fpr.append(fpr_)
+            tpr.append(tpr_)
+            auc.append(auc_)  
+            pred_per_fold.append(all_test_preds)
     validation_sheet = pd.DataFrame()
     validation_sheet['aucs'] = auc
     validation_sheet['fprs'] = fpr

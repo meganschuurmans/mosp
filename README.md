@@ -8,6 +8,16 @@ Welcome to the official GitHub repository for our '' 2024 paper, "_End-to-end pr
 
 In our study, we explore the integration of clinical data and contrast-enhanced computed tomography (CECT) at time of diagnosis of pancreatic ductal adenocarcinoma (PDAC) to enhance patient survival prediction. We focus on addressing two key challenges: (1) developing unimodal AI models for clinical data and CECT scans (2) developing a multimodal AI system combining the short-term survival riskscores of both unimodal models. Our proposed model surpasses the current TNM stagig system in providing prognosis, showcasing stable performance across two external validation cohorts. 
 
+## How to start?
+
+To start training the multimodal algorithm from scratch:
+1. Go to the baseline EfficientNet algorithm to train the imaging model
+2. Go to the baseline 2-layer CNN to train the clinical model
+3. Start training the prognostic model by following the steps in the following section
+
+To start training the multimodal algorithm using the weights of our imaging- and clinical model per fold:
+
+
 ## Installation Guide for Linux 
 
 ### The development data and internal test set

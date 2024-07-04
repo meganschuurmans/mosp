@@ -39,8 +39,6 @@ def main():
                         help="Base path to imaging models")
     parser.add_argument('--clinical_model_dir', type=str, required=True,
                         help="Base path to clinical models")
-    parser.add_argument('--clinical_variables_dir', type=str, required=True,
-                        help="Base path to clinical variable excel")
     parser.add_argument('--results_dir', type=str, required=True,           
                         help="Destination path for results")
     parser.add_argument('--model_phase', type=str, default='inference',            

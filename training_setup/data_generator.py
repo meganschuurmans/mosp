@@ -37,7 +37,7 @@ class BinaryClassification2Layer(nn.Module):
 #clinic_age_diagnosis	lab_base_CA19_9	lab_base_CEA	clinic_BMI	clinic_weightloss	clinic_ECOG	chemo	base_lesionsize	    base_lesionlocation: 10
 #clinic_age_diagnosis	lab_base_CA19_9	lab_base_CEA	clinic_BMI	clinic_weightloss	clinic_ECOG: 6
 def clinic_features_for_pat_id(args, pat_id):
-    clinical_features_marksheet = args.clinical_variables_dir
+    clinical_features_marksheet = args.clinical_model_dir + 'overview.xlsx'
     overview = pd.read_excel(clinical_features_marksheet)
     clinical_features = overview.loc[overview[overview.columns[0]] == int(pat_id)].iloc[:,1:7].values
     x_train = torch.tensor(clinical_features, dtype=torch.float32).to('cuda')     

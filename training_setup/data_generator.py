@@ -134,4 +134,10 @@ def model_paths(args):
             optimal_mm_model_paths['F{}'.format(fold)] = args.multimodal_dir + args.modal_type +  '_no_ensemble_no_ema_F{}_E{}.joblib'.format(fold, epoch)
             optimal_imaging_model_paths['F{}'.format(fold)] = args.imaging_dir +'efficientnet-b4_F{}_E{}.pt'.format(fold, epoch)
 
+    if args.model_phase == 'inference':
+        for fold in range(args.num_folds):
+            optimal_mm_model_paths['F{}'.format(fold)] = args.mosp_dir + 'optimal_multimodal_models/mm_no_ensemble_F{}.joblib'.format(fold)
+            optimal_imaging_model_paths['F{}'.format(fold)] = args.mosp_dir + 'optimal_imaging_models/efficientnet-b4_F{}.joblib'.format(fold)
+            optimal_clinic_model_paths['F{}'.format(fold)] = args.mosp_dir + 'optimal_clinical_models/2_layer_nn_F{}.joblib'.format(fold)
+
     return optimal_clinic_model_paths, optimal_imaging_model_paths, optimal_mm_model_paths

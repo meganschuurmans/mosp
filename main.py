@@ -15,15 +15,16 @@
 import argparse
 from training_setup.train import training, training_all_epochs
 from training_setup.validation import validation, validation_all_epochs
-from training_setup.testing import internal_testing, external_testing
+from training_setup.testing import internal_testing, external_testing, inference
 from training_setup.data_generator import model_paths
-from training_setup.create_gradcam import create_gradcam
 #-----------------------------------------------------------------------------------------
 def main():
     # command line arguments for hyperparameters and I/O paths
     parser = argparse.ArgumentParser(description='Command Line Arguments for Training Script')
 
     # data I/0 + experimental setup
+    parser.add_argument('--mosp_dir', type=str, required=True,            
+                        help="Path to MOSP model")
     parser.add_argument('--archive_overview_dir', type=str, required=True,            
                         help="Path to archive overview")
     parser.add_argument('--overview_dir', type=str, required=True,            
@@ -42,7 +43,7 @@ def main():
                         help="Base path to clinical variable excel")
     parser.add_argument('--results_dir', type=str, required=True,           
                         help="Destination path for results")
-    parser.add_argument('--model_phase', type=str, required=True,            
+    parser.add_argument('--model_phase', type=str, default='inference',            
                         help="Model development, internal testing or external testing: training, validation, internal_testing, external_testing, grad_cam")
     
     # training hyperparameters
@@ -95,8 +96,8 @@ def main():
         internal_testing(args=args)
     elif args.model_phase == 'external_testing':
         external_testing(args=args)
-    elif args.model_phase == 'gradcam':
-        create_gradcam(args=args)
+    else:
+        inference(args=args)
 
 if __name__ == '__main__':
     main()

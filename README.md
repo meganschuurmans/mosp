@@ -11,12 +11,11 @@ In our study, we explore the integration of clinical data and contrast-enhanced 
 ## How to start?
 
 To start training the multimodal algorithm from scratch:
-1. Go to the baseline EfficientNet algorithm to train the imaging model
-2. Go to the baseline 2-layer CNN to train the clinical model
+1. Go to [the baseline imaging model](https://github.com/meganschuurmans/imosp) to train the imaging model
+2. Go to [the baseline clinical model](https://github.com/meganschuurmans/closp) to train the clinical model
 3. Start training the prognostic model by following the steps in the following section
 
-To start training the multimodal algorithm using the weights of our imaging- and clinical model per fold:
-
+To use the multimodal algorithm using the weights of our imaging- and clinical model per fold, follow the example bash script.
 
 ## Installation Guide for Linux 
 
